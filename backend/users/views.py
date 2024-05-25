@@ -9,8 +9,6 @@ from djoser.views import UserViewSet
 from users.permissions import AuthorOrAdminOnly, ReadOrAdminOnly
 from users.serializers import FollowSerializer
 from users.models import Follows
-from django.db.models import Subquery
-
 
 User = get_user_model()
 
@@ -20,10 +18,10 @@ class CustomUserViewSet(UserViewSet):
     def get_permissions(self):
         if self.action == 'retrieve':
             self.permission_classes = (ReadOrAdminOnly,)
-        elif self.action == 'avatar':
+        elif self.action in ('avatar', 'subscriptions') :
             self.permission_classes = (AuthorOrAdminOnly,)
-        elif self.action in ('subscribe', 'subscriptions'):
-            self.permission_classes = (AuthorOrAdminOnly,)
+        elif self.action == 'subscribe':
+            self.permission_classes = (permissions.IsAuthenticated,)
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -50,8 +48,7 @@ class CustomUserViewSet(UserViewSet):
         user = self.request.user.id
         follower = self.request.parser_context.get('kwargs').get('id')
         if request.method == 'POST':
-            serializer = self.get_serializer(user,
-                                             data=request.data)
+            serializer = self.get_serializer(user, data={})
             serializer.is_valid(raise_exception=True)
             user_instance = get_object_or_404(User, pk=user)
             follower_instance = get_object_or_404(User, pk=follower)
@@ -59,6 +56,7 @@ class CustomUserViewSet(UserViewSet):
                                    following=follower_instance)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         Follows.objects.filter(user=user, following=follower).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -66,7 +64,7 @@ class CustomUserViewSet(UserViewSet):
     def subscriptions(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=self.request.user.id)
         following_ids = Follows.objects.filter(user_id=user.id).values('following_id')
-        queryset = User.objects.filter(id__in=Subquery(following_ids))
+        queryset = User.objects.filter(id__in=following_ids)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
