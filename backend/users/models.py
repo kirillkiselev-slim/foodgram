@@ -8,11 +8,13 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     email = models.EmailField(max_length=254, blank=False, null=False,
-                              unique=True)
+                              unique=True, verbose_name='Имейл')
     avatar = models.ImageField(upload_to='avatars/', null=False,
-                               default='default.png')
-    first_name = models.CharField(max_length=150, blank=False, null=False)
-    last_name = models.CharField(max_length=150, blank=False, null=False)
+                               default='default.png', verbose_name='Аватар')
+    first_name = models.CharField(max_length=150, blank=False, null=False,
+                                  verbose_name='Имя')
+    last_name = models.CharField(max_length=150, blank=False, null=False,
+                                 verbose_name='Фамилия')
 
     class Meta:
         verbose_name = 'Пользователь'

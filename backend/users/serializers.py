@@ -3,8 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from users.models import Follows, CustomUser
-from users.constants import CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS
-from recipes.models import Recipes
+from api.constants import CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS
+from recipes.models import Recipe
 from api.serializers import Base64ImageField
 
 User = get_user_model()
@@ -48,10 +48,10 @@ class FollowSerializer(ProfileSerializer):
         return follower_data
 
     def get_recipes(self, obj):
-        return Recipes.objects.filter(author=obj)
+        return Recipe.objects.filter(author=obj)
 
     def get_recipes_count(self, obj):
-        return Recipes.objects.filter(author=obj).count()
+        return Recipe.objects.filter(author=obj).count()
 
     def to_representation(self, instance):
         request = self.context.get('request')
