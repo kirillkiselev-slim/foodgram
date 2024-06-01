@@ -9,10 +9,10 @@ app_name = 'api'
 
 
 router = DefaultRouter()
-router.register(r'^users', CustomUserViewSet, basename='users')
-router.register(r'^ingredients', IngredientViewSet, basename='ingredients')
-router.register(r'^tags', TagsViewSet, basename='tags')
-router.register(r'^recipes', RecipesViewSet, basename='recipes')
+router.register(r'users', CustomUserViewSet, basename='users')
+router.register(r'ingredients', IngredientViewSet, basename='ingredients')
+router.register(r'tags', TagsViewSet, basename='tags')
+router.register(r'recipes', RecipesViewSet, basename='recipes')
 
 # user_patterns = [
 #     path('', CustomUserViewSet.as_view()),
