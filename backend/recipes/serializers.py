@@ -3,9 +3,9 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.serializers import CurrentUserDefault
-from api.constants import (LIST_REQUIRED, UNIQUE_TAGS,
-                           UNIQUE_INGREDIENTS, ALREADY_IN_SHOPPING_CART,
-                           NOT_IN_SHOPPING_CART)
+from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
+                           ALREADY_IN_SHOPPING_CART, NOT_IN_SHOPPING_CART,
+                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED)
 
 from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe, ShoppingCart
 from api.serializers import Base64ImageField
@@ -41,29 +41,29 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'is_in_shopping_cart', 'name', 'image', 'text',
                   'cooking_time')
 
+    def get_request(self):
+        return self.context.get('request')
+
+    def get_user(self):
+        return self.get_request().user
+
     def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        user = request.user
-        if user.is_anonymous:
+        if self.get_user().is_anonymous:
             return False
-        recipe_in_table = obj.recipes_shopping_cart.filter(
-            user=user, recipe=obj)
-        if not recipe_in_table.exists():
+        is_favorited = obj.recipes_shopping_cart.filter(
+            user=self.get_user(), recipe=obj)
+        if not is_favorited.exists():
             return False
-        return obj.recipes_shopping_cart.get(
-            user=user, recipe=obj).is_favorited
+        return is_favorited.first().is_favorited
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        user = request.user
-        if user.is_anonymous:
+        if self.get_user().is_anonymous:
             return False
-        recipe_in_table = obj.recipes_shopping_cart.filter(
-            user=user, recipe=obj)
-        if not recipe_in_table.exists():
+        is_in_shopping_cart = obj.recipes_shopping_cart.filter(
+            user=self.get_user(), recipe=obj)
+        if not is_in_shopping_cart.exists():
             return False
-        return obj.recipes_shopping_cart.get(
-            user=user, recipe=obj).is_in_shopping_cart
+        return is_in_shopping_cart.first().is_in_shopping_cart
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -144,42 +144,56 @@ class RecipePostPatchSerializer(RecipeSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
-    def request(self):
+    def get_request(self):
         return self.context.get('request')
 
-    def user(self):
-        return self.request().user
+    def get_user(self):
+        return self.get_request().user
 
-    def recipe(self):
-        return self.request().parser_context.get('kwargs').get('pk')
+    def get_recipe(self):
+        return self.get_request().parser_context.get('kwargs').get('pk')
 
     def validate(self, shopping_cart_data):
-        recipe = get_object_or_404(Recipe, pk=self.recipe())
-        if self.request().method == 'POST':
-            if recipe.recipes_shopping_cart.filter(
-                    recipe=recipe, user=self.user()).exists():
-                raise ValidationError(ALREADY_IN_SHOPPING_CART)
+        recipe = get_object_or_404(Recipe, pk=self.get_recipe())
+        path = self.get_request().path
+        if 'shopping_cart' in path:
+            if self.get_request().method == 'POST':
+                if recipe.recipes_shopping_cart.filter(
+                        recipe=recipe, user=self.get_user(),
+                        is_in_shopping_cart=True):
+                    raise ValidationError(ALREADY_IN_SHOPPING_CART)
 
-        elif self.request().method == 'DELETE':
-            if not recipe.recipes_shopping_cart.filter(
-                    recipe=recipe, user=self.user()).exists():
-                raise ValidationError(NOT_IN_SHOPPING_CART)
+            elif self.get_request().method == 'DELETE':
+                if not recipe.recipes_shopping_cart.filter(
+                        recipe=recipe, user=self.get_user(),
+                        is_in_shopping_cart=True):
+                    raise ValidationError(NOT_IN_SHOPPING_CART)
+        else:
+            if self.get_request().method == 'POST':
+                if recipe.recipes_shopping_cart.filter(
+                        recipe=recipe, user=self.get_user(),
+                        is_favorited=True):
+                    raise ValidationError(ALREADY_IN_FAVORITED)
 
+            elif self.get_request().method == 'DELETE':
+                if not recipe.recipes_shopping_cart.filter(
+                        recipe=recipe, user=self.get_user(),
+                        is_favorited=True):
+                    raise ValidationError(NOT_IN_FAVORED)
         return shopping_cart_data
 
     def to_representation(self, instance):
-        pk = self.recipe()
+        pk = self.get_recipe()
         recipe = Recipe.objects.get(pk=pk)
         data = {
             'id': recipe.id,
             'name': recipe.name,
-            'image': self.request().build_absolute_uri(recipe.image.url),
+            'image': self.get_request().build_absolute_uri(recipe.image.url),
             'cooking_time': recipe.cooking_time
         }
         return data

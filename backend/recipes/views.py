@@ -33,10 +33,26 @@ class RecipesViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
 
+    def get_recipe(self):
+        recipe_pk = self.kwargs.get('pk')
+        return get_object_or_404(Recipe, pk=recipe_pk)
+
+    def get_user(self):
+        return self.request.user
+
+    def serializer_favorite_and_shopping_cart(self):
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        return serializer
+
+    def get_shopping_cart(self):
+        return ShoppingCart.objects.get(user=self.get_user(),
+                                        recipe=self.get_recipe())
+
     def get_serializer_class(self):
         if self.action in ('create', 'partial_update'):
             return RecipePostPatchSerializer
-        elif self.action == 'shopping_cart':
+        elif self.action in ('shopping_cart', 'favorite'):
             return ShoppingCartSerializer
         return super().get_serializer_class()
 
@@ -46,36 +62,47 @@ class RecipesViewSet(viewsets.ModelViewSet):
     @action(['get'], url_path='get-link', detail=True)
     def get_link(self, request, *args, **kwargs):
         uri = request.build_absolute_uri('/s/')
-        recipe_pk = self.kwargs.get('pk')
-        recipe = get_object_or_404(Recipe, pk=recipe_pk)
-        return Response({'short-link': uri + str(recipe.unique_uuid)})
+        return Response({'short-link': uri + str(self.get_recipe()
+                                                 .unique_uuid)})
 
     @action(['post', 'delete'], detail=True)
     def shopping_cart(self, request, *args, **kwargs):
-        recipe_pk = self.kwargs.get('pk')
-        recipe = get_object_or_404(Recipe, pk=recipe_pk)
-        user = request.user
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = self.serializer_favorite_and_shopping_cart()
         if request.method == 'POST':
-            ShoppingCart.objects.create(recipe=recipe, user=user,
-                                        is_in_shopping_cart=True)
+            ShoppingCart.objects.update_or_create(
+                recipe=self.get_recipe(), user=self.get_user(),
+                defaults={'is_in_shopping_cart': True})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        ShoppingCart.objects.filter(recipe=recipe, user=user).delete()
+
+        shopping_cart = self.get_shopping_cart()
+        shopping_cart.is_in_shopping_cart = False
+        shopping_cart.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(['get'], detail=False)
     def download_shopping_cart(self, request, *args, **kwargs):
-        user = User.objects.get(username='k') # TODO fix it to request.user
+        user = User.objects.get(username='k')  # TODO fix it to request.user
         shopping_cart = ShoppingCart.objects.filter(
             user=user, is_in_shopping_cart=True)
         recipes = [recipe.recipe.pk for recipe in shopping_cart]
-        print(recipes)
         ingredients = IngredientRecipe.objects.filter(
             recipe__in=recipes).values(
             'ingredient__name', 'ingredient__measurement_unit').annotate(
             Sum('amount'))
         return write_ingredients_to_csv(ingredients)
+
+    @action(['post', 'delete'], detail=True)
+    def favorite(self, request, *args, **kwargs):
+        serializer = self.serializer_favorite_and_shopping_cart()
+        if request.method == 'POST':
+            ShoppingCart.objects.update_or_create(
+                recipe=self.get_recipe(), user=self.get_user(),
+                defaults={'is_favorited': True})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        shopping_cart = self.get_shopping_cart()
+        shopping_cart.is_favorited = False
+        shopping_cart.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class GetRecipeByLinkViewSet(viewsets.GenericViewSet,
@@ -89,7 +116,3 @@ class GetRecipeByLinkViewSet(viewsets.GenericViewSet,
             uuid = Recipe.objects.get(unique_uuid=recipe)
             serializer = self.get_serializer(uuid)
             return Response(serializer.data)
-
-
-
-

@@ -19,3 +19,10 @@ ALREADY_IN_SHOPPING_CART = {
 NOT_IN_SHOPPING_CART = {
     'errors': 'Этого товара нет в корзине.'
 }
+
+ALREADY_IN_FAVORITED = {
+    'errors': 'Уже добавлено в избранное.'
+}
+NOT_IN_FAVORED = {
+    'errors': 'Этого товара нет в избранном.'
+}
