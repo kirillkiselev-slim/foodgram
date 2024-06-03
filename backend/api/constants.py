@@ -26,3 +26,6 @@ ALREADY_IN_FAVORITED = {
 NOT_IN_FAVORED = {
     'errors': 'Этого товара нет в избранном.'
 }
+USERS_RECIPE = {
+    'errors': 'Это ваш рецепт.'
+}

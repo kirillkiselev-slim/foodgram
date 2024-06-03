@@ -18,7 +18,7 @@ def write_ingredients_to_csv(ingredients):
         headers={"Content-Disposition":
                      'attachment; filename="my-shopping-cart.csv"'},
     )
-    headers = ['Ингридиенты', 'Единица измерения', 'Кол-во']
+    headers = ['Ингредиенты', 'Единица измерения', 'Кол-во']
     writer_headers = csv.writer(response)
     writer_headers.writerow(headers)
     writer = csv.DictWriter(response, fieldnames=ingredients[0].keys())

@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.serializers import CurrentUserDefault
 from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
                            ALREADY_IN_SHOPPING_CART, NOT_IN_SHOPPING_CART,
-                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED)
+                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE)
 
 from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe, ShoppingCart
 from api.serializers import Base64ImageField
@@ -158,6 +158,8 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     def validate(self, shopping_cart_data):
         recipe = get_object_or_404(Recipe, pk=self.get_recipe())
         path = self.get_request().path
+        if recipe.author == self.get_user():
+            raise ValidationError(USERS_RECIPE)
         if 'shopping_cart' in path:
             if self.get_request().method == 'POST':
                 if recipe.recipes_shopping_cart.filter(

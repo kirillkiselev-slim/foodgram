@@ -5,14 +5,16 @@ from rest_framework import viewsets, mixins, status
 from rest_framework import filters
 from rest_framework.response import Response
 from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from recipes.serializers import (IngredientsSerializer, TagsSerializer,
                                  RecipeSerializer, RecipePostPatchSerializer,
                                  ShoppingCartSerializer)
 from recipes.models import Ingredient, Tag, Recipe, ShoppingCart, IngredientRecipe
 from recipes.services import is_valid_uuid, write_ingredients_to_csv
-
-User = get_user_model()
+from api.filters import RecipeFilterSet
+from api.permissions import AuthorOrAdminOnly
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -20,18 +22,32 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     serializer_class = IngredientsSerializer
     filter_backends = (filters.SearchFilter,)
-    filterset_fields = ('^name',)
+    search_fields = ('^name',)
+    permission_classes = (IsAdminUser, )
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     pagination_class = None
     serializer_class = TagsSerializer
+    permission_classes = (IsAdminUser, )
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilterSet
+
+    def get_permissions(self):
+        if self.action == 'create':
+            self.permission_classes = (IsAuthenticated,)
+        elif self.action in ('partial_update', 'destroy',):
+            self.permission_classes = (AuthorOrAdminOnly,)
+        elif self.action in ('shopping_cart', 'favorite',
+                             'download_shopping_cart'):
+            self.permission_classes = (IsAuthenticated,)
+        return super().get_permissions()
 
     def get_recipe(self):
         recipe_pk = self.kwargs.get('pk')
@@ -81,7 +97,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(['get'], detail=False)
     def download_shopping_cart(self, request, *args, **kwargs):
-        user = User.objects.get(username='k')  # TODO fix it to request.user
+        user = request.user
         shopping_cart = ShoppingCart.objects.filter(
             user=user, is_in_shopping_cart=True)
         recipes = [recipe.recipe.pk for recipe in shopping_cart]
@@ -89,6 +105,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             recipe__in=recipes).values(
             'ingredient__name', 'ingredient__measurement_unit').annotate(
             Sum('amount'))
+        if not ingredients:
+            return Response({'shopping_cart': 'Корзина пуста'})
         return write_ingredients_to_csv(ingredients)
 
     @action(['post', 'delete'], detail=True)
