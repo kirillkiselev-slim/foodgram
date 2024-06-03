@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -10,8 +9,6 @@ from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
 from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe, ShoppingCart
 from api.serializers import Base64ImageField
 from users.serializers import ProfileSerializer
-
-User = get_user_model()
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
