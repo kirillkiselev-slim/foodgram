@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework import viewsets, mixins, status
@@ -6,7 +5,7 @@ from rest_framework import filters
 from rest_framework.response import Response
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from recipes.serializers import (IngredientsSerializer, TagsSerializer,
                                  RecipeSerializer, RecipePostPatchSerializer,
@@ -23,14 +22,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientsSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
-    permission_classes = (IsAdminUser, )
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     pagination_class = None
     serializer_class = TagsSerializer
-    permission_classes = (IsAdminUser, )
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -38,6 +35,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilterSet
+
 
     def get_permissions(self):
         if self.action == 'create':
@@ -77,7 +75,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(['get'], url_path='get-link', detail=True)
     def get_link(self, request, *args, **kwargs):
-        uri = request.build_absolute_uri('/s/')
+        uri = request.build_absolute_uri('/s/') # todo check if link shows correctly
         return Response({'short-link': uri + str(self.get_recipe()
                                                  .unique_uuid)})
 
@@ -134,3 +132,4 @@ class GetRecipeByLinkViewSet(viewsets.GenericViewSet,
             uuid = Recipe.objects.get(unique_uuid=recipe)
             serializer = self.get_serializer(uuid)
             return Response(serializer.data)
+        return Response({'uuid': 'Неправильного формата UUID.'})

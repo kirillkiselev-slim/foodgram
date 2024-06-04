@@ -14,13 +14,6 @@ router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'tags', TagsViewSet, basename='tags')
 router.register(r'recipes', RecipesViewSet, basename='recipes')
 
-# user_patterns = [
-#     path('', CustomUserViewSet.as_view()),
-    # path('subscriptions/', ),
-    # path(r'(?P<int:pk>\d+)?/',),
-    # path(r'(?P<int:pk>\d+)?/subscribe/')
-# ]
-#
 urlpatterns = [
     path('', include(router.urls)),
     path('auth/', include('djoser.urls.authtoken')),

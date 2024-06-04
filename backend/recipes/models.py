@@ -1,8 +1,10 @@
 import uuid
 
+from django.utils.timezone import timezone
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import validate_slug
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -51,17 +53,31 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tags',
                                   verbose_name='теги')
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления') # todo: greater or equal than 1 !!
+        null=False, verbose_name='Время приготовления')
     unique_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4,
                                    editable=False)
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name='Добавлено')
 
     class Meta:
-        ordering = ('name',)
+        constraints = [
+            models.CheckConstraint(check=models.Q(cooking_time__gte=1),
+                                   name='cooking_time_gte_1',
+                                   violation_error_message=
+                                   'Время приготовления должно быть больше '
+                                   'или равно 1')
+        ]
+        ordering = ('-created_at',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return f'{self.name}'
+
+    @property
+    def is_favorited_count(self):
+        field = self.recipes_shopping_cart.aggregate(Count('is_favorited'))
+        return field.get('is_favorited__count', 0)
 
 
 class IngredientRecipe(models.Model):
