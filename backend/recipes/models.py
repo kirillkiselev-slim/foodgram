@@ -1,6 +1,5 @@
 import uuid
 
-from django.utils.timezone import timezone
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import validate_slug
@@ -11,7 +10,7 @@ User = get_user_model()
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=128, blank=False, null=False,
-                            verbose_name='Название',)
+                            verbose_name='Название', )
     measurement_unit = models.CharField(max_length=64,
                                         blank=False, null=False,
                                         verbose_name='Единица измерения')
@@ -41,7 +40,7 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    author = models.ForeignKey(User, on_delete=models.DO_NOTHING,
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
                                verbose_name='Автор', related_name='recipes')
     name = models.CharField(max_length=256, verbose_name='Название',
                             blank=False, null=False)
@@ -53,7 +52,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tags',
                                   verbose_name='теги')
     cooking_time = models.PositiveSmallIntegerField(
-        null=False, verbose_name='Время приготовления')
+        blank=False, null=False, verbose_name='Время приготовления')
     unique_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4,
                                    editable=False)
     created_at = models.DateTimeField(auto_now_add=True,
@@ -92,6 +91,13 @@ class IngredientRecipe(models.Model):
     class Meta:
         verbose_name = 'Рецепт-ингредиент'
         verbose_name_plural = 'Рецепты-ингредиенты'
+        constraints = [
+            models.CheckConstraint(check=models.Q(amount__gte=1),
+                                   name='amount_gte_1',
+                                   violation_error_message=
+                                   'Кол-во должно быть больше '
+                                   'или равно 1')
+        ]
 
     def __str__(self):
         return f'{self.ingredient}-{self.recipe}"'
@@ -115,7 +121,7 @@ class ShoppingCart(models.Model):
         verbose_name_plural = 'Корзина-избранное'
         constraints = [
             models.UniqueConstraint(fields=('user', 'recipe'), name='user-recipe')
-            ]
+        ]
 
     def __str__(self):
         return f'Корзина-избранное {self.user} с рецептом "{self.recipe}"'

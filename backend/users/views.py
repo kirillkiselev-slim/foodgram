@@ -45,25 +45,24 @@ class CustomUserViewSet(UserViewSet):
 
     @action(['post', 'delete'], detail=True)
     def subscribe(self, request, *args, **kwargs):
-        user = self.request.user.id
-        follower = self.request.parser_context.get('kwargs').get('id')
+        user = get_object_or_404(User, pk=request.user.id)
+        follower = get_object_or_404(
+            User, pk=self.request.parser_context.get('kwargs').get('id'))
         if request.method == 'POST':
             serializer = self.get_serializer(user, data={})
             serializer.is_valid(raise_exception=True)
-            user_instance = get_object_or_404(User, pk=user)
-            follower_instance = get_object_or_404(User, pk=follower)
-            Follows.objects.create(user=user_instance,
-                                   following=follower_instance)
+            Follows.objects.create(user=user, following=follower)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        Follows.objects.filter(user=user, following=follower).delete()
+        follow = get_object_or_404(Follows, user=user, following=follower)
+        follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(['get'], detail=False)
     def subscriptions(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=self.request.user.id)
-        following_ids = Follows.objects.filter(user_id=user.id).values('following_id')
+        following_ids = Follows.objects.filter(user=user).values('following')
         queryset = User.objects.filter(id__in=following_ids)
 
         page = self.paginate_queryset(queryset)

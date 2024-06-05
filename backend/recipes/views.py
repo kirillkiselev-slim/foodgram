@@ -1,18 +1,17 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework import viewsets, mixins, status
-from rest_framework import filters
 from rest_framework.response import Response
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 from recipes.serializers import (IngredientsSerializer, TagsSerializer,
                                  RecipeSerializer, RecipePostPatchSerializer,
                                  ShoppingCartSerializer)
 from recipes.models import Ingredient, Tag, Recipe, ShoppingCart, IngredientRecipe
 from recipes.services import is_valid_uuid, write_ingredients_to_csv
-from api.filters import RecipeFilterSet
+from api.filters import RecipeFilterSet, IngredientsFilterSet
 from api.permissions import AuthorOrAdminOnly
 
 
@@ -20,7 +19,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     pagination_class = None
     serializer_class = IngredientsSerializer
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (IngredientsFilterSet,)
     search_fields = ('^name',)
 
 

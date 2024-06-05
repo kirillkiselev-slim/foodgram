@@ -4,7 +4,8 @@ from rest_framework import serializers
 from rest_framework.serializers import CurrentUserDefault
 from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
                            ALREADY_IN_SHOPPING_CART, NOT_IN_SHOPPING_CART,
-                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE)
+                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE,
+                           AMOUNT_ABOVE_ONE, NEED_INGREDIENTS, NEED_TAGS)
 
 from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe, ShoppingCart
 from api.serializers import Base64ImageField
@@ -85,17 +86,26 @@ class RecipePostPatchSerializer(RecipeSerializer):
         pass
 
     def validate(self, recipe_data):
-        tags = recipe_data.get('tags')
-        ingredients = recipe_data.get('ingredients')
-
-        if tags is not None:
-            if len(set(tags)) != len(tags):
-                raise ValidationError(UNIQUE_TAGS)
-        if ingredients is not None:
-            ingredients_ids = [ingredient.get('id') for ingredient in ingredients]
-            if len(set(ingredients_ids)) != len(ingredients):
-                raise ValidationError(UNIQUE_INGREDIENTS)
+        if 'tags' not in recipe_data:
+            raise ValidationError(NEED_TAGS)
+        if 'ingredients' not in recipe_data:
+            raise ValidationError(NEED_INGREDIENTS)
         return recipe_data
+
+    def validate_tags(self, tags):
+        if len(set(tags)) != len(tags):
+            raise ValidationError(UNIQUE_TAGS)
+        return tags
+
+    def validate_ingredients(self, ingredients):
+        ingredients_ids = [ingredient.get('id') for ingredient in ingredients]
+        if len(set(ingredients_ids)) != len(ingredients):
+            raise ValidationError(UNIQUE_INGREDIENTS)
+        amounts = [True if ingredient.get('amount') < 1 else False
+                   for ingredient in ingredients]
+        if any(amounts):
+            raise ValidationError(AMOUNT_ABOVE_ONE)
+        return ingredients
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')

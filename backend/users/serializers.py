@@ -55,9 +55,9 @@ class FollowSerializer(ProfileSerializer):
 
     def to_representation(self, instance):
         request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit', None)
         if request.method == 'POST':
             instance = get_object_or_404(User, pk=self.follower_id())
-
         data = super().to_representation(instance)
         data['recipes'] = [
             {'id': recipe.id, 'name': recipe.name,
@@ -65,4 +65,6 @@ class FollowSerializer(ProfileSerializer):
              'cooking_time': recipe.cooking_time}
             for recipe in instance.recipes.all()
         ]
+        if recipes_limit is not None:
+            data['recipes'] = data['recipes'][:int(recipes_limit)]
         return data

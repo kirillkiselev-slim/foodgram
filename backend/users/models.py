@@ -36,7 +36,7 @@ class Follows(models.Model):
                                       verbose_name='Добавлено')
 
     class Meta:
-        ordering = ('-created_at', )
+        ordering = ('-created_at',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
