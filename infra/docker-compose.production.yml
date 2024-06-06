@@ -12,7 +12,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
-    image: kirillkiselev/infra-backend
+    image: infra-backend
     env_file: ../.env
     volumes:
       - media:/media/
@@ -21,7 +21,7 @@ services:
       - db
   frontend:
     env_file: ../.env
-    image: kirillkiselev/infra-frontend
+    image: infra-frontend
     command: cp -r /app/result_build/. /static/
     volumes:
       - ../frontend/:/app/result_build/
