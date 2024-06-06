@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from users.models import Follows, CustomUser
+from users.models import Follows
 from api.constants import CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS
 from recipes.models import Recipe
 from api.serializers import Base64ImageField
@@ -43,7 +43,8 @@ class FollowSerializer(ProfileSerializer):
         user_id = request.user.id
         if user_id == self.follower_id():
             raise serializers.ValidationError(CANNOT_FOLLOW_YOURSELF)
-        elif Follows.objects.filter(user=user_id, following=self.follower_id()):
+        elif Follows.objects.filter(user=user_id,
+                                    following=self.follower_id()):
             raise serializers.ValidationError(ALREADY_FOLLOWS)
         return follower_data
 

@@ -7,7 +7,7 @@ from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
                            NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE,
                            AMOUNT_ABOVE_ONE, NEED_INGREDIENTS, NEED_TAGS)
 
-from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe, ShoppingCart
+from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe
 from api.serializers import Base64ImageField
 from users.serializers import ProfileSerializer
 
@@ -138,7 +138,8 @@ class RecipePostPatchSerializer(RecipeSerializer):
                 amount = ingredient.get('amount')
                 ingredient_instance = get_object_or_404(
                     Ingredient, pk=ingredient_id)
-                recipe_ingredient, _ = instance.recipe_ingredients.get_or_create(
+                (recipe_ingredient,
+                 created) = instance.recipe_ingredients.get_or_create(
                     ingredient=ingredient_instance)
                 recipe_ingredient.amount = amount
                 recipe_ingredient.save()

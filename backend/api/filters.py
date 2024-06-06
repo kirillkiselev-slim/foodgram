@@ -1,13 +1,12 @@
-from django_filters.rest_framework import FilterSet
-from django_filters.rest_framework import filters
 from rest_framework.filters import SearchFilter
-from django_filters.filters import CharFilter
 
-from recipes.models import Recipe, Tag
+from django_filters.rest_framework import FilterSet, filters
+
+from recipes.models import Recipe
 
 
 class RecipeFilterSet(FilterSet):
-    tags = CharFilter(method='filter_tags')
+    tags = filters.CharFilter(method='filter_tags')
     is_favorited = filters.BooleanFilter(
         field_name='recipes_shopping_cart__is_favorited')
     is_in_shopping_cart = filters.BooleanFilter(

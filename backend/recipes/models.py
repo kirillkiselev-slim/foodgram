@@ -60,11 +60,11 @@ class Recipe(models.Model):
 
     class Meta:
         constraints = [
-            models.CheckConstraint(check=models.Q(cooking_time__gte=1),
-                                   name='cooking_time_gte_1',
-                                   violation_error_message=
-                                   'Время приготовления должно быть больше '
-                                   'или равно 1')
+            models.CheckConstraint(
+                check=models.Q(cooking_time__gte=1),
+                name='cooking_time_gte_1',
+                violation_error_message='Время приготовления должно'
+                                        ' быть больше или равно 1')
         ]
         ordering = ('-created_at',)
         verbose_name = 'Рецепт'
@@ -86,17 +86,17 @@ class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, verbose_name='рецепт',
                                on_delete=models.CASCADE,
                                related_name='recipe_ingredients')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество', default=1)
+    amount = models.PositiveSmallIntegerField(verbose_name='Количество',
+                                              default=1)
 
     class Meta:
         verbose_name = 'Рецепт-ингредиент'
         verbose_name_plural = 'Рецепты-ингредиенты'
         constraints = [
-            models.CheckConstraint(check=models.Q(amount__gte=1),
-                                   name='amount_gte_1',
-                                   violation_error_message=
-                                   'Кол-во должно быть больше '
-                                   'или равно 1')
+            models.CheckConstraint(
+                check=models.Q(amount__gte=1), name='amount_gte_1',
+                violation_error_message='Кол-во должно '
+                                        'быть больше или равно 1')
         ]
 
     def __str__(self):
@@ -120,7 +120,8 @@ class ShoppingCart(models.Model):
         verbose_name = 'Корзина-избранное'
         verbose_name_plural = 'Корзина-избранное'
         constraints = [
-            models.UniqueConstraint(fields=('user', 'recipe'), name='user-recipe')
+            models.UniqueConstraint(fields=('user', 'recipe'),
+                                    name='user-recipe')
         ]
 
     def __str__(self):

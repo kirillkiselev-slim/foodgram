@@ -9,7 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from recipes.serializers import (IngredientsSerializer, TagsSerializer,
                                  RecipeSerializer, RecipePostPatchSerializer,
                                  ShoppingCartSerializer)
-from recipes.models import Ingredient, Tag, Recipe, ShoppingCart, IngredientRecipe
+from recipes.models import (Ingredient, Tag, Recipe,
+                            ShoppingCart, IngredientRecipe)
 from recipes.services import is_valid_uuid, write_ingredients_to_csv
 from api.filters import RecipeFilterSet, IngredientsFilterSet
 from api.permissions import AuthorOrAdminOnly
@@ -34,7 +35,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilterSet
-
 
     def get_permissions(self):
         if self.action == 'create':
@@ -74,7 +74,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(['get'], url_path='get-link', detail=True)
     def get_link(self, request, *args, **kwargs):
-        uri = request.build_absolute_uri('/s/') # todo check if link shows correctly
+        uri = request.build_absolute_uri('/s/')
         return Response({'short-link': uri + str(self.get_recipe()
                                                  .unique_uuid)})
 
