@@ -163,14 +163,14 @@ jobs:
           script: |
             cd foodgram
             # Выполняет pull образов с Docker Hub
-            sudo docker compose -f docker-compose.yml pull
+            sudo docker compose -f ./infra/docker-compose.yml pull
             # Перезапускает все контейнеры в Docker Compose
-            sudo docker compose -f docker-compose.yml down
-            sudo docker compose -f docker-compose.yml up -d
+            sudo docker compose -f ./infra/docker-compose.yml down
+            sudo docker compose -f ./infra/docker-compose.yml up -d
             # Выполняет миграции и сбор статики
-            sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
-            sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic
-            sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/
+            sudo docker compose -f ./infra/docker-compose.yml exec backend python manage.py migrate
+            sudo docker compose -f ./infra/docker-compose.yml exec backend python manage.py collectstatic
+            sudo docker compose -f ./infra/docker-compose.yml exec backend cp -r /app/collected_static/. /static/
 
   send_message:
     if: github.ref == 'refs/heads/main'
