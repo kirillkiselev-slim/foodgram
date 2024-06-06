@@ -8,26 +8,26 @@ volumes:
 services:
   db:
     image: postgres:13
-    env_file: ../.env
+    env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
-    image: infra-backend
-    env_file: ../.env
+    image: kirillkiselev/infra-backend
+    env_file: .env
     volumes:
       - media:/media/
       - static:/static/
     depends_on:
       - db
   frontend:
-    env_file: ../.env
-    image: infra-frontend
+    env_file: .env
+    image: kirillkiselev/infra-frontend
     command: cp -r /app/result_build/. /static/
     volumes:
       - ../frontend/:/app/result_build/
   nginx:
     image: nginx:1.25.4-alpine
-    env_file: ../.env
+    env_file: .env
     ports:
       - "80:80"
     volumes:
