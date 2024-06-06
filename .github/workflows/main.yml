@@ -186,4 +186,3 @@ jobs:
             Деплой успешно выполнен!
             ${{ github.actor }} закоммитил с сообщением ${{ github.event.commits[0].message }}. 
             Ссылка: https://github.com/${{ github.repository }}/commit/${{ github.sha }}.
-
