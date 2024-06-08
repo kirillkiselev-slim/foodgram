@@ -3,3 +3,4 @@ db.sqlite3
 users/migrations
 recipes/migrations
 api/migrations
+backend/.env
