@@ -15,6 +15,7 @@ services:
   backend:
     image: kirillkiselev/foodgram_backend
     env_file: .env
+    command: cp -r /app/media/. /media/
     volumes:
       - media:/media/
       - static:/static/
