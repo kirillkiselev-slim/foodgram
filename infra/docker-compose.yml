@@ -31,7 +31,7 @@ services:
       - static_frontend:/app/build/
   nginx:
     container_name: foodgram_proxy
-    build: ./infra
+    build: ../infra/
     env_file: ../.env
     ports:
       - "8000:80"

@@ -1,6 +1,7 @@
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import action
-from rest_framework import viewsets, mixins, status
+from rest_framework.decorators import action, api_view
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
@@ -122,15 +123,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class GetRecipeByLinkViewSet(viewsets.GenericViewSet,
-                             mixins.RetrieveModelMixin):
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        recipe = self.kwargs.get('pk')
-        if is_valid_uuid(recipe):
-            uuid = Recipe.objects.get(unique_uuid=recipe)
-            serializer = self.get_serializer(uuid)
-            return Response(serializer.data)
-        return Response({'uuid': 'Неправильного формата UUID.'})
+@api_view(['GET'])
+def get_recipe(request, *args, **kwargs):
+    recipe = kwargs.get('recipe')
+    if is_valid_uuid(recipe):
+        recipe = get_object_or_404(Recipe, unique_uuid=recipe)
+        uri = request.build_absolute_uri(f'/recipes/{recipe.id}/')
+        return HttpResponseRedirect(uri)
+    return HttpResponse('Invalid URL.', status=status.HTTP_400_BAD_REQUEST)

@@ -29,10 +29,10 @@ class CustomUserViewSet(UserViewSet):
             return FollowSerializer
         return super().get_serializer_class()
 
-    @action(['patch', 'delete'], detail=True)
+    @action(['patch', 'delete', 'PUT'], detail=True)
     def avatar(self, request, *args, **kwargs):
         user = self.request.user
-        if request.method == 'PATCH':
+        if request.method == 'PATCH' or request.method == 'PUT':
             serializer = self.get_serializer(user,
                                              data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)

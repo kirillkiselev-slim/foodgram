@@ -3,11 +3,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 
+from recipes.views import get_recipe
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls', namespace='api')),
-    path('s/', include('recipes.urls', namespace='recipes-uuid'))
+    path('s/<uuid:recipe>/', get_recipe, name='recipes-uuid')
 ]
 
 if settings.DEBUG:

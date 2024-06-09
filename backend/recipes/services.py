@@ -9,7 +9,7 @@ def is_valid_uuid(value):
         uuid.UUID(str(value))
         return value
     except ValueError:
-        return
+        return False
 
 
 def write_ingredients_to_csv(ingredients):
