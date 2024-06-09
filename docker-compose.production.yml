@@ -33,6 +33,7 @@ services:
       - "8000:80"
     volumes:
       - static:/static_django/
+      - ../docs/:/usr/share/nginx/html/api/docs/
       - media:/media/
       - static_frontend:/static_frontend/
     depends_on:
