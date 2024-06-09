@@ -31,11 +31,11 @@ services:
       - static_frontend:/app/build/
   nginx:
     container_name: foodgram_proxy
-    image: nginx:1.25.4-alpine
+    build: ./infra
+    env_file: ../.env
     ports:
       - "8000:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - static:/static_django/
       - media:/media/
       - ../docs/:/usr/share/nginx/html/api/docs/

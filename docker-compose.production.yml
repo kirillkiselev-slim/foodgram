@@ -27,7 +27,7 @@ services:
     volumes:
       - static_frontend:/static_frontend/
   nginx:
-    image: nginx:1.25.4-alpine
+    image: kirillkiselev/foodgram_proxy
     env_file: .env
     ports:
       - "8000:80"
