@@ -101,7 +101,7 @@ class RecipePostPatchSerializer(RecipeSerializer):
         ingredients_ids = [ingredient.get('id') for ingredient in ingredients]
         if len(set(ingredients_ids)) != len(ingredients):
             raise ValidationError(UNIQUE_INGREDIENTS)
-        amounts = [True if ingredient.get('amount') < 1 else False
+        amounts = [True if int(ingredient.get('amount')) < 1 else False
                    for ingredient in ingredients]
         if any(amounts):
             raise ValidationError(AMOUNT_ABOVE_ONE)

@@ -4,7 +4,7 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from recipes.serializers import (IngredientsSerializer, TagsSerializer,
                                  RecipeSerializer, RecipePostPatchSerializer,
@@ -39,6 +39,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             self.permission_classes = (IsAuthenticated,)
+        elif self.action == 'list':
+            self.permission_classes = (AllowAny,)
         elif self.action in ('partial_update', 'destroy',):
             self.permission_classes = (AuthorOrAdminOnly,)
         elif self.action in ('shopping_cart', 'favorite',
