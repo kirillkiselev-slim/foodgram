@@ -15,9 +15,8 @@ services:
   backend:
     image: kirillkiselev/foodgram_backend
     env_file: .env
-    command: cp -r /app/media/. /media/
     volumes:
-      - media:/media/
+      - media:/app/media/
       - static:/static/
     depends_on:
       - db
@@ -35,7 +34,7 @@ services:
     volumes:
       - static:/static_django/
       - ../docs/:/usr/share/nginx/html/api/docs/
-      - media:/media/
+      - media:/app/media/
       - static_frontend:/static_frontend/
     depends_on:
       - backend
