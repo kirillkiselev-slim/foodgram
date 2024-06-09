@@ -30,7 +30,7 @@ services:
     volumes:
       - static_frontend:/app/build/
   nginx:
-    container_name: foodgram_proxy
+    container_name: foodgram_nginx
     build: ../infra/
     env_file: ../.env
     ports:
