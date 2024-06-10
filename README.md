@@ -5,12 +5,16 @@
 docker-compose файла и GitHub Actions формирует контейнеры для проверки интегрции и деплоя 
 нового 'запушенного' кода на сервере. При удачной проверке, в телеграм приходит уведомление от бота.
 
+## Адрес проекта
+
+https://foodgrambykiselev.ddns.net/
+
 ## Установка
 
 Клонировать репозиторий и перейти в него в командной строке:
 
 ```
-git clone https://github.com/kirillkiselev-slim/kittygram_final/
+git clone https://github.com/kirillkiselev-slim/foodgram/
 ```
 
 Cоздать и активировать виртуальное окружение:
@@ -65,18 +69,18 @@ git push'
 
 ### Workflow
 
-(https://github.com/kirillkiselev-slim/kittygram_final/actions/workflows/main.yml/badge.svg)
+(https://github.com/kirillkiselev-slim/foodgram/actions/workflows/main.yml/badge.svg)
 
 ### Использованные технологии
 
-- Django
-- Docker
-- DRF
-- React
-- Github Actions
-- Nginx
+* Python 3.9
+* Django 4.2.13
+* Django REST framework 3.14 
+* Nginx 
+* Docker 
+* Postgres
 
 ### Автор
 
-Кирилл Киселев
+[Кирилл Киселев](https://github.com/kirillkiselev-slim)
 
