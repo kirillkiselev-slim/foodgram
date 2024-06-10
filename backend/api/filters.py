@@ -9,7 +9,6 @@ class RecipeFilterSet(FilterSet):
     tags = filters.CharFilter(method='filter_tags')
     is_favorited = filters.BooleanFilter(method='filter_is_favorited')
     is_in_shopping_cart = filters.BooleanFilter(
-        field_name='recipes_shopping_cart__is_in_shopping_cart',
         method='filter_is_in_shopping_cart')
 
     class Meta:
@@ -17,18 +16,20 @@ class RecipeFilterSet(FilterSet):
         fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
 
     def filter_is_favorited(self, queryset, name, value):
-        author = self.request.user
-        if not author.is_authenticated:
-            return queryset
+        user = self.request.user
+        if not user.is_authenticated:
+            return queryset.none()
         return queryset.filter(
-            author=author, recipes_shopping_cart__is_favorited=True)
+            recipes_shopping_cart__user=user,
+            recipes_shopping_cart__is_favorited=True)
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        author = self.request.user
-        if not author.is_authenticated:
-            return queryset
+        user = self.request.user
+        if not user.is_authenticated:
+            return queryset.none()
         return queryset.filter(
-            author=author, recipes_shopping_cart__is_in_shopping_cart=True)
+            recipes_shopping_cart__user=user,
+            recipes_shopping_cart__is_in_shopping_cart=True)
 
     def filter_tags(self, queryset, name, value):
         tags = self.request.query_params.getlist('tags')
