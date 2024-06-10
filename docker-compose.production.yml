@@ -10,12 +10,12 @@ volumes:
 services:
   db:
     image: postgres:13
-    env_file: .env
+    env_file: infra/.env
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
     image: kirillkiselev/foodgram_backend
-    env_file: .env
+    env_file: infra/.env
     volumes:
       - media:/app/media/
       - static:/static/
@@ -23,14 +23,14 @@ services:
     depends_on:
       - db
   frontend:
-    env_file: .env
+    env_file: infra/.env
     image: kirillkiselev/foodgram_frontend
     command: cp -r /app/build/. /static_frontend/
     volumes:
       - static_frontend:/static_frontend/
   nginx:
     image: kirillkiselev/foodgram_nginx
-    env_file: .env
+    env_file: infra/.env
     ports:
       - "8000:80"
     volumes:

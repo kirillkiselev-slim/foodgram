@@ -1,7 +1,7 @@
 frontend/node_modules
 infra/frontend/build
 infra/.env
-
+.env
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -57,6 +57,8 @@ coverage.xml
 
 # Translations
 *.mo
+/data/ingredients_test_1.json
+/data/ingredients_test.json
 *.pot
 
 # Django stuff:
@@ -136,6 +138,8 @@ dmypy.json
 # .idea
 .idea
 .vscode
+
+
 
 static/
 media/
