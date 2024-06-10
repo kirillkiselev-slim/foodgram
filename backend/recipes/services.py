@@ -1,4 +1,5 @@
-import csv, json
+import csv
+import json
 import uuid
 
 from django.http import HttpResponse
