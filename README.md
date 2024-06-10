@@ -69,7 +69,7 @@ git push'
 
 ### Workflow
 
-[Deploy badge](https://github.com/kirillkiselev-slim/foodgram/actions/workflows/main.yml/badge.svg)
+![Deploy badge](https://github.com/kirillkiselev-slim/foodgram/actions/workflows/main.yml/badge.svg)
 
 
 ### Использованные технологии
