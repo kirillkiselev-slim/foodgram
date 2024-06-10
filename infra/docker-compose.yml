@@ -22,13 +22,14 @@ services:
     volumes:
       - static:/app/static_django/
       - media:/app/media/
+      - ../data:/app/data/
     depends_on:
       - db
   frontend:
     container_name: foodgram_frontend
     build: ../frontend
     volumes:
-      - static_frontend:/app/build/
+      - static_frontend:/static_frontend/
   nginx:
     container_name: foodgram_nginx
     build: ../infra/
