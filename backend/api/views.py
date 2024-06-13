@@ -49,8 +49,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             self.permission_classes = (IsAuthenticated,)
-        elif self.action == 'list':
-            self.permission_classes = (AllowAny,)
         elif self.action in {'partial_update', 'destroy'}:
             self.permission_classes = (AuthorOrAdminOnly,)
         elif self.action in {'shopping_cart', 'favorite',
