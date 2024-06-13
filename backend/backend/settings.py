@@ -158,9 +158,6 @@ USE_TZ = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'
 
-
-
-# Url для формирования ссылки на статику
 STATIC_URL = '/static/django/'
 STATIC_ROOT = '/app/static_django/'
 

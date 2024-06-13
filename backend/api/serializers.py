@@ -12,7 +12,7 @@ from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
                            NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE,
                            AMOUNT_ABOVE_ONE, NOT_NONE_INGREDIENTS,
                            CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS)
-from recipes.models import Ingredient, Tag, Recipe, IngredientRecipe
+from recipes.models import Ingredient, Tag, Recipe
 
 User = get_user_model()
 
@@ -23,7 +23,8 @@ class Base64ImageField(serializers.ImageField):
         if isinstance(image_data, str) and image_data.startswith('data:image'):
             format, imgstr = image_data.split(';base64,')
             ext = format.split('/')[-1]
-            image_data = ContentFile(base64.b64decode(imgstr), name=f'temp.{ext}')
+            image_data = ContentFile(base64.b64decode(imgstr),
+                                     name=f'temp.{ext}')
 
         return super().to_internal_value(image_data)
 
@@ -201,7 +202,8 @@ class RecipePostPatchSerializer(RecipeSerializer):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
-        return self.create_or_update_ingredients_tags(recipe, tags, ingredients)
+        return self.create_or_update_ingredients_tags(recipe,
+                                                      tags, ingredients)
 
     def update(self, instance, validated_data):
         tags = validated_data.get('tags')
