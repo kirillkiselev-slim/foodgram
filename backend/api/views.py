@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.db.models import F
 from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 from api.serializers import (IngredientsSerializer, TagsSerializer,
                              RecipeSerializer, RecipePostPatchSerializer,

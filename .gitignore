@@ -61,6 +61,10 @@ coverage.xml
 /data/ingredients_test.json
 *.pot
 
+/backend/api/migrations/*
+/backend/recipes/migrations/*
+/backend/users/migrations/*
+
 # Django stuff:
 *.log
 local_settings.py
