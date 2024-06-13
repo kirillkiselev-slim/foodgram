@@ -93,7 +93,7 @@ DATABASES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = ['https://fooodgrambykiselev.ddns.net']
+CSRF_TRUSTED_ORIGINS = ['https://kiselevfoodgram.ddns.net']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -148,7 +148,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'
