@@ -3,9 +3,9 @@ from django.db import models
 from django.db.models import Q
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     email = models.EmailField(max_length=254, blank=False, null=False,
                               unique=True, verbose_name='Имейл')
@@ -19,17 +19,17 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('id',)
+        ordering = ('email',)
 
     def __str__(self):
         return self.email
 
 
 class Follows(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='follows',
+    user = models.ForeignKey(User, related_name='follows',
                              on_delete=models.CASCADE,
                              verbose_name='Пользователь')
-    following = models.ForeignKey(CustomUser, related_name='followers',
+    following = models.ForeignKey(User, related_name='followers',
                                   on_delete=models.CASCADE,
                                   verbose_name='Подписчик')
     created_at = models.DateTimeField(auto_now_add=True,
@@ -43,7 +43,7 @@ class Follows(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=('user', 'following'),
-                name='unique_user_follower'
+                name='unique_user_follower',
             ),
             models.CheckConstraint(
                 check=~Q(user=models.F('following')),

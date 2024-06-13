@@ -27,10 +27,5 @@ USERS_RECIPE = {
     'errors': 'Это ваш рецепт.'
 }
 AMOUNT_ABOVE_ONE = 'Кол-во в ингредиентах должно быть больше или равно 1.'
-
-NEED_INGREDIENTS = {
-    'errors': 'Добавьте ингредиенты.'
-}
-NEED_TAGS = {
-    'errors': 'Добавьте теги.'
-}
+INVALID_URL = 'Неправильное значение UUID в объекте.'
+NOT_NONE_INGREDIENTS = 'Значение или ключ не может быть "null"'

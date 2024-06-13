@@ -1,14 +1,14 @@
 from django.contrib import admin
 
-from .models import CustomUser, Follows
+from .models import User, Follows
 
 
-class CustomUserAdmin(admin.ModelAdmin):
+class UserAdmin(admin.ModelAdmin):
     search_fields = (
         'email',
         'username'
     )
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(User, UserAdmin)
 admin.site.register(Follows)

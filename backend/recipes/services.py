@@ -5,23 +5,23 @@ import uuid
 from django.http import HttpResponse
 
 
-def is_valid_uuid(value):
+def is_valid_uuid(uuid_value):
     """Check if uuid is valid in url."""
     try:
-        uuid.UUID(str(value))
-        return value
+        uuid.UUID(str(uuid_value))
     except ValueError:
         return False
+    return uuid_value
 
 
 def write_ingredients_to_csv(ingredients):
     """Write ingredients to scv when downloading."""
     response = HttpResponse(
-        content_type="text/csv",
-        headers={"Content-Disposition":
+        content_type='text/csv',
+        headers={'Content-Disposition':
                      'attachment; filename="my-shopping-cart.csv"'},
     )
-    headers = ['Ингредиенты', 'Единица измерения', 'Кол-во']
+    headers = ('Ингредиенты', 'Единица измерения', 'Кол-во')
     writer_headers = csv.writer(response)
     writer_headers.writerow(headers)
     writer = csv.DictWriter(response, fieldnames=ingredients[0].keys())

@@ -2,7 +2,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.validators import validate_slug
+from django.core.validators import validate_slug, MinValueValidator
 from django.db.models import Count
 
 User = get_user_model()
@@ -10,7 +10,7 @@ User = get_user_model()
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=128, blank=False, null=False,
-                            verbose_name='Название', )
+                            verbose_name='Название')
     measurement_unit = models.CharField(max_length=64,
                                         blank=False, null=False,
                                         verbose_name='Единица измерения')
@@ -52,26 +52,23 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tags',
                                   verbose_name='теги')
     cooking_time = models.PositiveSmallIntegerField(
-        blank=False, null=False, verbose_name='Время приготовления')
-    unique_uuid = models.UUIDField(primary_key=False, default=uuid.uuid4,
-                                   editable=False)
+        blank=False, null=False, verbose_name='Время приготовления',
+        validators=[MinValueValidator(1,
+                                      message='Время приготовления должно'
+                                              ' быть больше или равно 1')])
+    unique_uuid = models.UUIDField(
+        primary_key=False, default=uuid.uuid4,
+        editable=False, verbose_name='Уникальный uuid')
     created_at = models.DateTimeField(auto_now_add=True,
                                       verbose_name='Добавлено')
 
     class Meta:
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(cooking_time__gte=1),
-                name='cooking_time_gte_1',
-                violation_error_message='Время приготовления должно'
-                                        ' быть больше или равно 1')
-        ]
         ordering = ('-created_at',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'{self.name}'
+        return self.name
 
     @property
     def is_favorited_count(self):
@@ -86,18 +83,16 @@ class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, verbose_name='рецепт',
                                on_delete=models.CASCADE,
                                related_name='recipe_ingredients')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество',
-                                              default=1)
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество', default=1,
+        validators=[MinValueValidator(1,
+                                      message='Кол-во должно быть '
+                                              'больше или равно 1')]
+    )
 
     class Meta:
         verbose_name = 'Рецепт-ингредиент'
         verbose_name_plural = 'Рецепты-ингредиенты'
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(amount__gte=1), name='amount_gte_1',
-                violation_error_message='Кол-во должно '
-                                        'быть больше или равно 1')
-        ]
 
     def __str__(self):
         return f'{self.ingredient}-{self.recipe}"'

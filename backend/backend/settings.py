@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'djoser'
 ]
 
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -121,7 +121,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.FoodgramPageNumberPagination',
     'PAGE_SIZE': 6,
 
 }
@@ -130,13 +130,13 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'user': 'users.serializers.ProfileSerializer',
-        'current_user': 'users.serializers.ProfileSerializer',
+        'user': 'api.serializers.ProfileSerializer',
+        'current_user': 'api.serializers.ProfileSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
-    "HIDE_USERS": False,
+    'HIDE_USERS': False,
 }
 
 
@@ -157,6 +157,8 @@ USE_TZ = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'
+
+
 
 # Url для формирования ссылки на статику
 STATIC_URL = '/static/django/'
