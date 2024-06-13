@@ -79,7 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -94,7 +93,7 @@ DATABASES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = ['https://foodgrambykiselev.ddns.net']
+CSRF_TRUSTED_ORIGINS = ['https://fooodgrambykiselev.ddns.net']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -122,7 +121,7 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.FoodgramPageNumberPagination',
-    'PAGE_SIZE': 6,
+    'PAGE_SIZE': 4,
 
 }
 
@@ -139,7 +138,6 @@ DJOSER = {
     'HIDE_USERS': False,
 }
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -151,9 +149,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media/'

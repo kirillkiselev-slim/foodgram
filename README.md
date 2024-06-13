@@ -7,7 +7,7 @@ docker-compose файла и GitHub Actions формирует контейне�
 
 ## Адрес проекта
 
-https://foodgrambykiselev.ddns.net/
+https://fooodgrambykiselev.ddns.net/
 
 ## Установка
 
@@ -71,7 +71,7 @@ git push'
 
 ### 1-ый пример
 Method: `Post`
-Endpoint: `http://127.0.0.1:8000/api/recipes/`
+Endpoint: `http://fooodgrambykiselev.ddns.net/api/recipes/`
 
 Body: 
 
@@ -138,7 +138,7 @@ Status code: 201
 ### 2-ой пример
 
 Method: `GET`
-Endpoint: `http://127.0.0.1:8000/api/users/subscriptions/`
+Endpoint: `http://fooodgrambykiselev.ddns.net/api/users/subscriptions/`
 
 Response: 
 
@@ -176,7 +176,7 @@ Status code: 200
 ### 3-й пример
 
 Method: `GET`
-Endpoint: `http://127.0.0.1:8000/api/ingredients/`
+Endpoint: `http://fooodgrambykiselev.ddns.net/api/ingredients/`
 
 Response: 
 
