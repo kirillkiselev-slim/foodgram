@@ -26,6 +26,9 @@ NOT_IN_FAVORED = {
 USERS_RECIPE = {
     'errors': 'Это ваш рецепт.'
 }
-AMOUNT_ABOVE_ONE = 'Кол-во в ингредиентах должно быть больше или равно 1.'
-INVALID_URL = 'Неправильное значение UUID в объекте.'
-NOT_NONE_INGREDIENTS = 'Значение или ключ не может быть "null"'
+AMOUNT_ABOVE_ONE = {
+    'amount': 'Кол-во в ингредиентах должно быть больше или равно 1.'
+}
+NOT_NONE_INGREDIENTS = {
+    'not_null': 'Значение или ключ не может быть "null"'
+}

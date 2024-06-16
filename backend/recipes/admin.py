@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from recipes.models import (Ingredient, Tag, Recipe,
-                            ShoppingCart, IngredientRecipe)
+                            ShoppingCart, IngredientRecipe,
+                            Favorite)
 
 
 class IngredientRecipeInline(admin.TabularInline):
@@ -47,11 +48,20 @@ class ShoppingCartAdmin(admin.ModelAdmin):
         'recipe',
         'user',
         'is_in_shopping_cart',
-        'is_favorited'
     )
     list_editable = (
         'is_in_shopping_cart',
-        'is_favorited'
+    )
+
+
+class FavoriteCartAdmin(admin.ModelAdmin):
+    list_display = (
+        'recipe',
+        'user',
+        'is_favorited',
+    )
+    list_editable = (
+        'is_favorited',
     )
 
 
@@ -66,4 +76,5 @@ admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagsAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(ShoppingCart, ShoppingCartAdmin)
+admin.site.register(Favorite, FavoriteCartAdmin)
 admin.site.register(IngredientRecipe, IngredientRecipeAdmin)

@@ -48,7 +48,8 @@ class Recipe(models.Model):
                               verbose_name='Фото')
     text = models.TextField(null=False, blank=False, verbose_name='Текст')
     ingredients = models.ManyToManyField(Ingredient,
-                                         through='IngredientRecipe')
+                                         through='IngredientRecipe',
+                                         verbose_name='Ингредиенты')
     tags = models.ManyToManyField(Tag, related_name='tags',
                                   verbose_name='теги')
     cooking_time = models.PositiveSmallIntegerField(
@@ -58,7 +59,8 @@ class Recipe(models.Model):
                                               ' быть больше или равно 1')])
     unique_uuid = models.UUIDField(
         primary_key=False, default=uuid.uuid4,
-        editable=False, verbose_name='Уникальный uuid')
+        editable=False, verbose_name='Уникальный uuid',
+        unique=True)
     created_at = models.DateTimeField(auto_now_add=True,
                                       verbose_name='Добавлено')
 
@@ -72,8 +74,7 @@ class Recipe(models.Model):
 
     @property
     def is_favorited_count(self):
-        field = self.recipes_shopping_cart.aggregate(Count('is_favorited'))
-        return field.get('is_favorited__count', 0)
+        return self.favorite_recipes.filter(is_favorited=True).count()
 
 
 class IngredientRecipe(models.Model):
@@ -98,26 +99,46 @@ class IngredientRecipe(models.Model):
         return f'{self.ingredient}-{self.recipe}"'
 
 
-class ShoppingCart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='user_shopping_cart',
-                             verbose_name='Пользователь')
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
-                               related_name='recipes_shopping_cart',
-                               verbose_name='Рецепт')
-    is_in_shopping_cart = models.BooleanField(default=False,
-                                              verbose_name='в корзине')
-    is_favorited = models.BooleanField(default=False,
-                                       verbose_name='в избранном')
+class FavoriteShoppingCartBaseModel(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='%(class)s_user',
+        verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+        related_name='%(class)s_recipes',
+        verbose_name='Рецепт')
 
     class Meta:
         ordering = ('user',)
-        verbose_name = 'Корзина-избранное'
-        verbose_name_plural = 'Корзина-избранное'
+        abstract = True
         constraints = [
-            models.UniqueConstraint(fields=('user', 'recipe'),
-                                    name='user-recipe')
+            models.UniqueConstraint(
+                fields=('user', 'recipe'), name='%(class)s_user_recipe')
         ]
 
+
+class Favorite(FavoriteShoppingCartBaseModel):
+    is_favorited = models.BooleanField(
+        default=False, verbose_name='в избранном')
+
+    class Meta(FavoriteShoppingCartBaseModel.Meta):
+        ordering = ('user',)
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
     def __str__(self):
-        return f'Корзина-избранное {self.user} с рецептом "{self.recipe}"'
+        return f'Избранное {self.user} с рецептом "{self.recipe}"'
+
+
+class ShoppingCart(FavoriteShoppingCartBaseModel):
+    is_in_shopping_cart = models.BooleanField(
+        default=False, verbose_name='в корзине')
+
+    class Meta(FavoriteShoppingCartBaseModel.Meta):
+        ordering = ('user',)
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'
+
+    def __str__(self):
+        return f'Корзина {self.user} с рецептом "{self.recipe}"'

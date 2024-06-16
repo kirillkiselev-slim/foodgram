@@ -12,7 +12,8 @@ from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
                            NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE,
                            AMOUNT_ABOVE_ONE, NOT_NONE_INGREDIENTS,
                            CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS)
-from recipes.models import Ingredient, Tag, Recipe
+from recipes.models import (Ingredient, Tag, Recipe,
+                            IngredientRecipe, Favorite, ShoppingCart)
 
 User = get_user_model()
 
@@ -38,11 +39,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'avatar')
 
-    def get_is_subscribed(self, user_data):
+    def get_is_subscribed(self, another_user):
         request = self.context.get('request')
         if not request.user.is_authenticated:
             return False
-        return request.user.follows.filter(following=user_data.id).exists()
+        return request.user.follows.filter(following=another_user.id).exists()
 
 
 class FollowSerializer(ProfileSerializer):
@@ -67,11 +68,11 @@ class FollowSerializer(ProfileSerializer):
             raise serializers.ValidationError(ALREADY_FOLLOWS)
         return follower_data
 
-    def get_recipes(self, user_data):
-        return Recipe.objects.filter(author=user_data)
+    def get_recipes(self, another_user):
+        return another_user.recipes.all()
 
-    def get_recipes_count(self, user_data):
-        return Recipe.objects.filter(author=user_data).count()
+    def get_recipes_count(self, another_user):
+        return another_user.recipes.count()
 
     def to_representation(self, instance):
         request = self.context.get('request')
@@ -124,24 +125,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         return self.get_request().user
 
     def get_is_favorited(self, recipe_data):
-        user = self.get_user()
-        if not user.is_authenticated:
-            return False
-        is_favorited = recipe_data.recipes_shopping_cart.filter(
-            user=user, recipe=recipe_data)
-        if not is_favorited.exists():
-            return False
-        return True
+        return recipe_data.favorite_recipes.filter(
+            is_favorited=True
+        ).exists()
 
     def get_is_in_shopping_cart(self, recipe_data):
-        user = self.get_user()
-        if not user.is_authenticated:
-            return False
-        is_in_shopping_cart = recipe_data.recipes_shopping_cart.filter(
-            user=user, recipe=recipe_data)
-        if not is_in_shopping_cart.exists():
-            return False
-        return True
+        return recipe_data.shoppingcart_recipes.filter(
+            is_in_shopping_cart=True
+        ).exists()
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -154,56 +145,61 @@ class RecipeSerializer(serializers.ModelSerializer):
         return data
 
 
+class IngredientRecipeSerializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField()
+
+    def validate(self, ingredient_data):
+        ingredient = ingredient_data.get('id')
+        amount = ingredient_data.get('amount')
+        if not ingredient:
+            raise ValidationError(NOT_NONE_INGREDIENTS)
+        if amount is None or amount < 1:
+            raise ValidationError(AMOUNT_ABOVE_ONE)
+        return ingredient_data
+
+
 class RecipePostPatchSerializer(RecipeSerializer):
     tags = serializers.PrimaryKeyRelatedField(many=True, write_only=True,
                                               queryset=Tag.objects.all(),
                                               required=True, allow_empty=False)
     author = serializers.HiddenField(default=CurrentUserDefault())
-    ingredients = serializers.ListField(required=True, allow_empty=False)
+    ingredients = IngredientRecipeSerializer(required=True, allow_empty=False,
+                                             many=True)
 
     class Meta(RecipeSerializer.Meta):
         pass
 
-    def validate_tags(self, tags):
-        if len(set(tags)) != len(tags):
-            raise ValidationError(UNIQUE_TAGS)
-        return tags
-
-    def validate_ingredients(self, ingredients):
-        ingredients_ids = [ingredient.get('id') for ingredient in ingredients]
-        ingredients_amounts = [ingredient.get('amount') for ingredient
-                               in ingredients]
-        if None in ingredients_ids or None in ingredients_amounts:
-            raise ValidationError(NOT_NONE_INGREDIENTS)
-        amounts = [int(ingredient.get('amount')) < 1
-                   for ingredient in ingredients]
-        if any(amounts):
-            raise ValidationError(AMOUNT_ABOVE_ONE)
-        if len(set(ingredients_ids)) != len(ingredients):
-            raise ValidationError(UNIQUE_INGREDIENTS)
-        return ingredients
-
     def create_or_update_ingredients_tags(
             self, recipe, tags=None, ingredients=None):
         recipe.tags.set(tags)
-
+        ingredients_data_create, ingredients_data_update = [], []
+        existing_ingredient_ids = {ri.ingredient: ri for
+                                   ri in recipe.recipe_ingredients.all()}
         for ingredient in ingredients:
             ingredient_id = ingredient.get('id')
-            amount = ingredient.get('amount', None)
-            if amount is None or int(amount) < 1:
-                raise ValidationError(AMOUNT_ABOVE_ONE)
-            recipe_ingredient, _ = recipe.recipe_ingredients.get_or_create(
-                ingredient_id=ingredient_id)
-            recipe_ingredient.amount = amount
-            recipe_ingredient.save()
+            amount = ingredient.get('amount')
+            if ingredient_id in existing_ingredient_ids:
+                recipe_ingredient = existing_ingredient_ids[ingredient_id]
+                recipe_ingredient.amount = amount
+                ingredients_data_update.append(recipe_ingredient)
+            else:
+                recipe_ingredient = IngredientRecipe(
+                    ingredient=ingredient_id, recipe=recipe, amount=amount
+                )
+                ingredients_data_create.append(recipe_ingredient)
+        IngredientRecipe.objects.bulk_create(ingredients_data_create)
+        IngredientRecipe.objects.bulk_update(ingredients_data_update,
+                                             fields=('amount',))
         return recipe
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
-        return self.create_or_update_ingredients_tags(recipe,
-                                                      tags, ingredients)
+        return self.create_or_update_ingredients_tags(
+            recipe, tags, ingredients)
 
     def update(self, instance, validated_data):
         tags = validated_data.get('tags')
@@ -221,11 +217,10 @@ class RecipePostPatchSerializer(RecipeSerializer):
         return RecipeSerializer(instance, context=self.context).data
 
 
-class ShoppingCartSerializer(serializers.ModelSerializer):
+class FavoriteShoppingCartBaseSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-        read_only_fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('id',)
+        abstract = True
 
     def get_request(self):
         return self.context.get('request')
@@ -234,48 +229,68 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         return self.get_request().user
 
     def get_recipe(self):
-        return self.get_request().parser_context.get('kwargs').get('pk')
-
-    def validate(self, shopping_cart_data):
-        recipe = get_object_or_404(Recipe, pk=self.get_recipe())
-        request = self.get_request()
-        user = self.get_user()
-        path = request.path
-        if recipe.author == user:
-            raise ValidationError(USERS_RECIPE)
-        if 'shopping_cart' in path:
-            if request.method == 'POST':
-                if recipe.recipes_shopping_cart.filter(
-                        recipe=recipe, user=user,
-                        is_in_shopping_cart=True):
-                    raise ValidationError(ALREADY_IN_SHOPPING_CART)
-
-            elif request.method == 'DELETE':
-                if not recipe.recipes_shopping_cart.filter(
-                        recipe=recipe, user=user,
-                        is_in_shopping_cart=True):
-                    raise ValidationError(NOT_IN_SHOPPING_CART)
-        else:
-            if request.method == 'POST':
-                if recipe.recipes_shopping_cart.filter(
-                        recipe=recipe, user=user,
-                        is_favorited=True):
-                    raise ValidationError(ALREADY_IN_FAVORITED)
-
-            elif request.method == 'DELETE':
-                if not recipe.recipes_shopping_cart.filter(
-                        recipe=recipe, user=user,
-                        is_favorited=True):
-                    raise ValidationError(NOT_IN_FAVORED)
-        return shopping_cart_data
+        pk = self.get_request().parser_context.get('kwargs').get('pk')
+        return get_object_or_404(Recipe, pk=pk)
 
     def to_representation(self, instance):
-        pk = self.get_recipe()
-        recipe = get_object_or_404(Recipe, pk=pk)
-        data = {
-            'id': recipe.id,
-            'name': recipe.name,
-            'image': self.get_request().build_absolute_uri(recipe.image.url),
-            'cooking_time': recipe.cooking_time
-        }
-        return data
+        return FavoriteShoppingCartRepresentSerializer(
+            instance, context=self.context
+        ).data
+
+
+class FavoriteShoppingCartRepresentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        recipe_pk = request.parser_context.get('kwargs').get('pk')
+        recipe = Recipe.objects.get(pk=recipe_pk)
+        recipe_data = super().to_representation(recipe)
+        return recipe_data
+
+
+class ShoppingCartSerializer(FavoriteShoppingCartBaseSerializer):
+    class Meta(FavoriteShoppingCartBaseSerializer.Meta):
+        model = ShoppingCart
+
+    def validate(self, shopping_cart_data):
+        recipe = self.get_recipe()
+        request = self.get_request()
+        user = self.get_user()
+        if recipe.author == user:
+            raise ValidationError(USERS_RECIPE)
+        query = ShoppingCart.objects.filter(
+            recipe=recipe, user=user,
+            is_in_shopping_cart=True).exists()
+        if request.method == 'POST':
+            if query:
+                raise ValidationError(ALREADY_IN_SHOPPING_CART)
+
+        if request.method == 'DELETE':
+            if not query:
+                raise ValidationError(NOT_IN_SHOPPING_CART)
+        return shopping_cart_data
+
+
+class FavoriteSerializer(FavoriteShoppingCartBaseSerializer):
+    class Meta(FavoriteShoppingCartBaseSerializer.Meta):
+        model = Favorite
+
+    def validate(self, favorite_data):
+        recipe = self.get_recipe()
+        request = self.get_request()
+        user = self.get_user()
+        if recipe.author == user:
+            raise ValidationError(USERS_RECIPE)
+        query = Favorite.objects.filter(
+            recipe=recipe, user=user, is_favorited=True).exists()
+        if request.method == 'POST':
+            if query:
+                raise ValidationError(ALREADY_IN_FAVORITED)
+
+        elif request.method == 'DELETE':
+            if not query:
+                raise ValidationError(NOT_IN_FAVORED)
+        return favorite_data

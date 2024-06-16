@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['*', ]
+ALLOWED_HOSTS = ['*',]
 
 # Application definition
 
@@ -92,6 +92,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', 5432)
     }
 }
+
 
 CSRF_TRUSTED_ORIGINS = ['https://kiselevfoodgram.ddns.net']
 
