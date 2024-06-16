@@ -156,10 +156,10 @@ USE_I18N = True
 USE_TZ = True
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/app/media/'
+# MEDIA_ROOT = '/app/media/'
 #
 STATIC_URL = '/static/django/'
-STATIC_ROOT = '/app/static_django/'
+# STATIC_ROOT = '/app/static_django/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

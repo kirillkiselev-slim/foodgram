@@ -19,16 +19,16 @@ class RecipeFilterSet(FilterSet):
         if not user.is_authenticated:
             return queryset.none()
         return queryset.filter(
-            recipes_shopping_cart__user_id=user.pk,
-            recipes_shopping_cart__is_favorited=True)
+            favorite_recipes__user_id=user.pk,
+            favorite_recipes_cart__is_favorited=True)
 
     def filter_is_in_shopping_cart(self, queryset, name, recipe_value):
         user = self.request.user
         if not user.is_authenticated:
             return queryset.none()
         return queryset.filter(
-            recipes_shopping_cart__user_id=user.pk,
-            recipes_shopping_cart__is_in_shopping_cart=True)
+            shoppingcart_recipes__user_id=user.pk,
+            shoppingcart_recipes__is_in_shopping_cart=True)
 
     def filter_tags(self, queryset, name, value):
         tags = self.request.query_params.getlist('tags')
