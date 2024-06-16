@@ -30,7 +30,7 @@ class RecipeFilterSet(FilterSet):
             shoppingcart_recipes__user_id=user.pk,
             shoppingcart_recipes__is_in_shopping_cart=True)
 
-    def filter_tags(self, queryset, name, value):
+    def filter_tags(self, queryset, name, recipe_value):
         tags = self.request.query_params.getlist('tags')
         return queryset.filter(tags__slug__in=tags).distinct()
 

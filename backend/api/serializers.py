@@ -79,14 +79,11 @@ class FollowSerializer(ProfileSerializer):
         if request.method == 'POST':
             instance = get_object_or_404(User, pk=self.follower_id())
         data = super().to_representation(instance)
-        data['recipes'] = [
-            {'id': recipe.id, 'name': recipe.name,
-             'image': request.build_absolute_uri(recipe.image.url),
-             'cooking_time': recipe.cooking_time}
-            for recipe in instance.recipes.all()
-        ]
+        recipes = RepresentRecipeSerializer(
+            instance, context=self.context).data
         if recipes_limit is not None:
-            return data['recipes'][:int(recipes_limit)]
+            recipes = recipes[:int(recipes_limit)]
+        data['recipes'] = recipes
         return data
 
 
@@ -232,12 +229,12 @@ class FavoriteShoppingCartBaseSerializer(serializers.ModelSerializer):
         return get_object_or_404(Recipe, pk=pk)
 
     def to_representation(self, instance):
-        return FavoriteShoppingCartRepresentSerializer(
+        return RepresentRecipeSerializer(
             instance, context=self.context
         ).data
 
 
-class FavoriteShoppingCartRepresentSerializer(serializers.ModelSerializer):
+class RepresentRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
