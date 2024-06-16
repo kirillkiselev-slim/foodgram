@@ -1,17 +1,7 @@
 import csv
 import json
-import uuid
 
 from django.http import HttpResponse
-
-
-def is_valid_uuid(uuid_value):
-    """Check if uuid is valid in url."""
-    try:
-        uuid.UUID(str(uuid_value))
-    except ValueError:
-        return False
-    return uuid_value
 
 
 def write_ingredients_to_csv(ingredients):

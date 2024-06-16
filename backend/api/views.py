@@ -14,7 +14,7 @@ from api.serializers import (IngredientsSerializer, TagsSerializer,
 from recipes.models import (Ingredient, Tag, Recipe,
                             ShoppingCart, IngredientRecipe,
                             Favorite)
-from recipes.services import is_valid_uuid, write_ingredients_to_csv
+from recipes.services import write_ingredients_to_csv
 from api.filters import RecipeFilterSet, IngredientsFilterSet
 from api.permissions import AuthorOrAdminOnly, ReadOrAdminOnly
 from djoser.views import UserViewSet

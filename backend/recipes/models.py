@@ -3,7 +3,6 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import validate_slug, MinValueValidator
-from django.db.models import Count
 
 User = get_user_model()
 

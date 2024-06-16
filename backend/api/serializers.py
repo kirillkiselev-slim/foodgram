@@ -7,8 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.serializers import CurrentUserDefault
 
-from api.constants import (UNIQUE_TAGS, UNIQUE_INGREDIENTS,
-                           ALREADY_IN_SHOPPING_CART, NOT_IN_SHOPPING_CART,
+from api.constants import (ALREADY_IN_SHOPPING_CART, NOT_IN_SHOPPING_CART,
                            NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE,
                            AMOUNT_ABOVE_ONE, NOT_NONE_INGREDIENTS,
                            CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS)
