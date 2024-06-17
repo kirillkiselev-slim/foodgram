@@ -79,11 +79,14 @@ class FollowSerializer(ProfileSerializer):
         if request.method == 'POST':
             instance = get_object_or_404(User, pk=self.follower_id())
         data = super().to_representation(instance)
-        recipes = RepresentRecipeSerializer(
-            instance, context=self.context).data
+        data['recipes'] = [
+            {'id': recipe.id, 'name': recipe.name,
+             'image': request.build_absolute_uri(recipe.image.url),
+             'cooking_time': recipe.cooking_time}
+            for recipe in instance.recipes.all()
+        ]
         if recipes_limit is not None:
-            recipes = recipes[:int(recipes_limit)]
-        data['recipes'] = recipes
+            return data['recipes'][:int(recipes_limit)]
         return data
 
 
@@ -170,24 +173,17 @@ class RecipePostPatchSerializer(RecipeSerializer):
     def create_or_update_ingredients_tags(
             self, recipe, tags=None, ingredients=None):
         recipe.tags.set(tags)
-        ingredients_data_create, ingredients_data_update = [], []
-        existing_ingredient_ids = {ri.ingredient: ri for
-                                   ri in recipe.recipe_ingredients.all()}
+        ingredients_data = []
+        recipe.recipe_ingredients.all().delete()
         for ingredient in ingredients:
             ingredient_id = ingredient.get('id')
             amount = ingredient.get('amount')
-            if ingredient_id in existing_ingredient_ids:
-                recipe_ingredient = existing_ingredient_ids[ingredient_id]
-                recipe_ingredient.amount = amount
-                ingredients_data_update.append(recipe_ingredient)
-            else:
-                recipe_ingredient = IngredientRecipe(
-                    ingredient=ingredient_id, recipe=recipe, amount=amount
-                )
-                ingredients_data_create.append(recipe_ingredient)
-        IngredientRecipe.objects.bulk_create(ingredients_data_create)
-        IngredientRecipe.objects.bulk_update(ingredients_data_update,
-                                             fields=('amount',))
+            recipe_ingredient = IngredientRecipe(
+                ingredient=ingredient_id, recipe=recipe, amount=amount
+            )
+            ingredients_data.append(recipe_ingredient)
+        IngredientRecipe.objects.bulk_create(ingredients_data)
+
         return recipe
 
     def create(self, validated_data):
@@ -242,7 +238,7 @@ class RepresentRecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         request = self.context.get('request')
         recipe_pk = request.parser_context.get('kwargs').get('pk')
-        recipe = Recipe.objects.get(pk=recipe_pk)
+        recipe = get_object_or_404(Recipe, pk=recipe_pk)
         recipe_data = super().to_representation(recipe)
         return recipe_data
 
