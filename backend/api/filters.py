@@ -20,7 +20,7 @@ class RecipeFilterSet(FilterSet):
             return queryset.none()
         return queryset.filter(
             favorite_recipes__user_id=user.pk,
-            favorite_recipes_cart__is_favorited=True)
+            favorite_recipes_cart__is_favorited=True,)
 
     def filter_is_in_shopping_cart(self, queryset, name, recipe_value):
         user = self.request.user
