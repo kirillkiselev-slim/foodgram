@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework.serializers import CurrentUserDefault
 
 from api.constants import (ALREADY_IN_SHOPPING_CART, NOT_IN_SHOPPING_CART,
-                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED, USERS_RECIPE,
+                           NOT_IN_FAVORED, ALREADY_IN_FAVORITED,
                            AMOUNT_ABOVE_ONE, NOT_NONE_INGREDIENTS,
                            CANNOT_FOLLOW_YOURSELF, ALREADY_FOLLOWS)
 from recipes.models import (Ingredient, Tag, Recipe,
