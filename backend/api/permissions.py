@@ -10,6 +10,10 @@ class ReadOrAdminOnly(AllowAny):
 class AuthorOrAdminOnly(IsAuthenticated):
 
     def has_object_permission(self, request, view, user_data):
-        if not view.__dict__.get('basename') == 'recipes':
-            return user_data.email == request.user or user_data.is_staff
+        return user_data.email == request.user or request.user.is_staff
+
+
+class RecipeAuthorOrAdminOnly(IsAuthenticated):
+
+    def has_object_permission(self, request, view, user_data):
         return user_data.author == request.user or request.user.is_staff

@@ -16,7 +16,8 @@ from recipes.models import (Ingredient, Tag, Recipe,
                             Favorite)
 from recipes.services import write_ingredients_to_csv
 from api.filters import RecipeFilterSet, IngredientsFilterSet
-from api.permissions import AuthorOrAdminOnly, ReadOrAdminOnly
+from api.permissions import (AuthorOrAdminOnly, ReadOrAdminOnly,
+                             RecipeAuthorOrAdminOnly)
 from djoser.views import UserViewSet
 from api.serializers import FollowSerializer
 from users.models import Follows
@@ -48,7 +49,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             self.permission_classes = (IsAuthenticated,)
         elif self.action in {'partial_update', 'destroy'}:
-            self.permission_classes = (AuthorOrAdminOnly,)
+            self.permission_classes = (RecipeAuthorOrAdminOnly,)
         return super().get_permissions()
 
     def get_user(self):
