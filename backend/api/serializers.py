@@ -258,8 +258,6 @@ class ShoppingCartSerializer(FavoriteShoppingCartBaseSerializer):
         recipe = self.get_recipe()
         request = self.get_request()
         user = self.get_user()
-        if recipe.author == user:
-            raise ValidationError(USERS_RECIPE)
         query = ShoppingCart.objects.filter(
             recipe=recipe, user=user,
             is_in_shopping_cart=True).exists()
@@ -281,8 +279,6 @@ class FavoriteSerializer(FavoriteShoppingCartBaseSerializer):
         recipe = self.get_recipe()
         request = self.get_request()
         user = self.get_user()
-        if recipe.author == user:
-            raise ValidationError(USERS_RECIPE)
         query = Favorite.objects.filter(
             recipe=recipe, user=user, is_favorited=True).exists()
         if request.method == 'POST':

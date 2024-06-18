@@ -23,9 +23,6 @@ ALREADY_IN_FAVORITED = {
 NOT_IN_FAVORED = {
     'errors': 'Этого товара нет в избранном.'
 }
-USERS_RECIPE = {
-    'errors': 'Это ваш рецепт.'
-}
 AMOUNT_ABOVE_ONE = {
     'amount': 'Кол-во в ингредиентах должно быть больше или равно 1.'
 }
