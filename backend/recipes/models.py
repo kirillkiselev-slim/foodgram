@@ -53,9 +53,8 @@ class Recipe(models.Model):
                                   verbose_name='теги')
     cooking_time = models.PositiveSmallIntegerField(
         blank=False, null=False, verbose_name='Время приготовления',
-        validators=[MinValueValidator(1,
-                                      message='Время приготовления должно'
-                                              ' быть больше или равно 1')])
+        validators=(MinValueValidator(1, message='Время приготовления должно'
+                                              ' быть больше или равно 1')),)
     unique_uuid = models.UUIDField(
         primary_key=False, default=uuid.uuid4,
         editable=False, verbose_name='Уникальный uuid',
